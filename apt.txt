@@ -1,4 +1,5 @@
 git
+gcc
 cmake
 make
 zlib1g-dev
