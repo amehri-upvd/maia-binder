@@ -1,5 +1,7 @@
 #!/bin/bash
 
+conda activate
+
 # Clone MAIA without initializing submodules
 git clone https://github.com/onera/Maia
 
