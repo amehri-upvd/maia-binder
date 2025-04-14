@@ -39,6 +39,8 @@ cmake ../ \
   -DPython_NumPy_VERSION=2.2.4 \
   -DPython_NumPy=ON
 
+log_info "Python used: $(${PYTHON_EXECUTABLE} --version)"
+
 
 log_info "Building MAIA..."
 make -j$(nproc)
