@@ -17,3 +17,5 @@ dependencies:
   - sphinx
   - sphinx-rtd-theme
   - sphinx-tabs
+  - gxx_linux-64  
+  - cmake
