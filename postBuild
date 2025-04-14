@@ -49,7 +49,6 @@ cmake ../ \
   -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython_NumPy=ON
 
-source source.sh
 
 # Build with parallel processing
 make -j
@@ -59,5 +58,13 @@ make install
 
 # Add to PYTHONPATH for notebook access
 echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
+
+source /home/jovyan/.bashrc   # Make sure the shell uses the updated .bashrc in this script
+
+# Copy Maia to the working directory (optional, but good for exploring source)
+cp -r Maia /home/jovyan/
+
+# Check numpy
+conda list numpy
 
 
