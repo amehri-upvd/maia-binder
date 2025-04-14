@@ -1,8 +1,5 @@
 #!/bin/bash
 
-conda init
-conda activate
-
 # Clone MAIA without initializing submodules
 git clone https://github.com/onera/Maia
 
@@ -36,7 +33,6 @@ cd build
 # Run CMake with configuration (as per previous setup)
 cmake ../ \
   -DCMAKE_INSTALL_PREFIX="$(pwd)/../Dist" \
-  -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
   -DCMAKE_CXX_STANDARD=17 \
   -DCMAKE_EXE_LINKER_FLAGS='-lz -lbz2' \
   -DCMAKE_SHARED_LINKER_FLAGS='-lz -lbz2' \
@@ -56,7 +52,10 @@ cmake ../ \
 source source.sh
 
 # Build with parallel processing
-make -j$(nproc)
+make -j
+
+# Install maia
+make install
 
 # Add to PYTHONPATH for notebook access
 echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
