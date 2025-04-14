@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Activate the Conda environment
-source /opt/conda/bin/activate base
-
 # Install system dependencies if apt.txt exists
 if [ -f apt.txt ]; then
   apt-get update && xargs -a apt.txt apt-get install -y --no-install-recommends
