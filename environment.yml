@@ -4,6 +4,7 @@ channels:
 dependencies:
   - python=3.10
   - numpy=1.26.0
+  - PyBind11=2.8.1
   - setuptools
   - wheel
   - pytest
