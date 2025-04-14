@@ -4,18 +4,17 @@ channels:
 dependencies:
   - python=3.10
   - numpy=1.26.0
-  - PyBind11=2.8.1
+  - pybind11=2.8.1
   - mpi4py=3.1.5
   - setuptools
   - wheel
   - pytest
   - pytest-html
-  - mpi4py=3.1.5
   - cython=0.29.36
   - h5py
   - pyyaml
   - sphinx
   - sphinx-rtd-theme
   - sphinx-tabs
-  - gxx_linux-64  
+  - gxx_linux-64
   - cmake
