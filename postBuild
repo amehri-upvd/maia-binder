@@ -50,6 +50,8 @@ cmake ../ \
   -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython_NumPy=ON
 
+source source.sh
+
 # Build with parallel processing
 make -j$(nproc)
 
