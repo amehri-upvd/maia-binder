@@ -23,6 +23,16 @@ log_info "Upgrading pip and installing NumPy..."
 pip install --upgrade pip
 pip install numpy
 
+echo "Installing mpi4py in notebook environment..."
+pip install --quiet mpi4py
+
+echo "Installing mpi4py in Maia virtualenv if it exists..."
+if [ -x /home/jovyan/Maia/build/maia-venv/bin/python ]; then
+    /home/jovyan/Maia/build/maia-venv/bin/python -m pip install --quiet mpi4py
+else
+    echo "maia-venv not found, skipping."
+fi
+
 # Avant le CMake
 PYTHON_EXECUTABLE="$(pwd)/maia-venv/bin/python"
 PYTHON_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))")
