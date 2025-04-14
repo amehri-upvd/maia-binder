@@ -54,10 +54,7 @@ cmake ../ \
 # Build with parallel processing
 make -j$(nproc)
 
-# Install
-make install
-
-conda list numpy
-
 # Add to PYTHONPATH for notebook access
 echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
+
+conda list 
