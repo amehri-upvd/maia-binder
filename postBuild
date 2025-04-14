@@ -33,7 +33,7 @@ cmake ../ \
   -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython_NumPy=ON
 
-make -j$(nproc)
+make 
 make install
 
 # Add to PYTHONPATH
