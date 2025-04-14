@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Clone MAIA without initializing submodules
+git clone https://github.com/onera/Maia
+
+cd Maia
+
+# Initialize direct submodules only, avoiding recursive initialization
+git submodule update --init 2>&1 || { echo "Erreur lors de l'initialisation des sous-modules" >&2; exit 1; }
+
+if ! command -v python &> /dev/null; then
+  echo "Python n'est pas installé ou n'est pas dans le PATH." >&2
+  exit 1
+fi
+
+if ! python -c "import numpy"; then
+  echo "NumPy n'est pas installé." >&2
+  exit 1
+fi
+
+
+if ! command -v mpirun &> /dev/null; then
+  echo "MPI n'est pas installé correctement" >&2
+  exit 1
+fi
+
+
+# Proceed with build
+mkdir -p build
+cd build
+
+
+# Run CMake with configuration (as per previous setup)
+cmake ../ \
+  -DCMAKE_INSTALL_PREFIX="$(pwd)/../Dist" \
+  -DCMAKE_CXX_STANDARD=17 \
+  -DCMAKE_EXE_LINKER_FLAGS='-lz -lbz2' \
+  -DCMAKE_SHARED_LINKER_FLAGS='-lz -lbz2' \
+  -DPDM_ENABLE_LONG_G_NUM=OFF \
+  -DPDM_ENABLE_EXTENSION=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPYTHON_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython_ROOT_DIR="$(dirname $(dirname ${PYTHON_EXECUTABLE}))" \
+  -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+  -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+  -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython3_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+  -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+  -DPython_NumPy=ON
+
+
+# Build with parallel processing
+make -j
+
+# Install maia
+make install
+
+# Add to PYTHONPATH for notebook access
+echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
+
+source /home/jovyan/.bashrc   # Make sure the shell uses the updated .bashrc in this script
+
+# Copy Maia to the working directory (optional, but good for exploring source)
+cp -r Maia /home/jovyan/
