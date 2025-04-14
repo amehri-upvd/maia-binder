@@ -1,5 +1,6 @@
 #!/bin/bash
 
+conda init
 conda activate
 
 # Clone MAIA without initializing submodules
