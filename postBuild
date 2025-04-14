@@ -1,51 +1,40 @@
 #!/bin/bash
 set -e
-set -x
 
-# Clone MAIA without initializing submodules
+# Logging helpers
+log_info() { echo -e "[INFO] $*"; }
+log_error() { echo -e "[ERROR] $*" >&2; }
+
+log_info "Cloning MAIA repository..."
 git clone https://github.com/onera/Maia
 cd Maia
 
-# Initialize direct submodules only, avoiding recursive initialization
-git submodule update --init 2>&1 || { echo "Erreur lors de l'initialisation des sous-modules" >&2; exit 1; }
+log_info "Initializing submodules..."
+git submodule update --init
 
-# Check for required dependencies
-if ! command -v python &> /dev/null; then
-  echo "Python n'est pas installé ou n'est pas dans le PATH." >&2
-  exit 1
-fi
+log_info "Creating build directory..."
+mkdir -p build && cd build
 
-if ! python -c "import numpy"; then
-  echo "NumPy n'est pas installé." >&2
-  exit 1
-fi
+log_info "Setting up virtual environment..."
+python3 -m venv maia-venv
+source maia-venv/bin/activate
 
-if ! command -v mpirun &> /dev/null; then
-  echo "MPI n'est pas installé correctement" >&2
-  exit 1
-fi
+log_info "Upgrading pip and installing NumPy..."
+pip install --upgrade pip
+pip install numpy
 
-# Get Python/Numpy paths
-PYTHON_EXECUTABLE=$(which python)
-PYTHON_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "from sysconfig import get_paths; print(get_paths()['include'])")
+# Get Python paths
+PYTHON_EXECUTABLE="$(pwd)/maia-venv/bin/python"
+PYTHON_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))")
 NUMPY_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())")
 
-# Proceed with build
-mkdir -p build
-cd build
-
-# Run CMake with configuration
+log_info "Configuring project with CMake..."
 cmake ../ \
   -DCMAKE_INSTALL_PREFIX="$(pwd)/../Dist" \
   -DCMAKE_CXX_STANDARD=17 \
-  -DCMAKE_EXE_LINKER_FLAGS='-lz -lbz2' \
-  -DCMAKE_SHARED_LINKER_FLAGS='-lz -lbz2' \
-  -DPDM_ENABLE_LONG_G_NUM=OFF \
-  -DPDM_ENABLE_EXTENSION=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DPYTHON_EXECUTABLE="${PYTHON_EXECUTABLE}" \
-  -DPython_ROOT_DIR="$(dirname $(dirname ${PYTHON_EXECUTABLE}))" \
-  -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython_ROOT_DIR="$(pwd)/maia-venv" \
   -DPython_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
   -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
@@ -53,16 +42,14 @@ cmake ../ \
   -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython_NumPy=ON
 
-# Build and install
-make -j
+log_info "Building MAIA..."
+make -j$(nproc)
+
+log_info "Installing MAIA..."
 make install
 
-# Add to PYTHONPATH for Jupyter
-echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
-source /home/jovyan/.bashrc
+log_info "Adding MAIA library to PYTHONPATH..."
+echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> ~/.bashrc
+echo "$(pwd)/../Dist/lib" > /home/jovyan/.pythonpath
 
-# Copy source for exploration (optional)
-cp -r ../ /home/jovyan/Maia
-
-# Verify numpy
-conda list numpy
+log_info "Done!"
