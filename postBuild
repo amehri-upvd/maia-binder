@@ -1,26 +1,40 @@
 #!/bin/bash
+set -e
+set -x
 
-set -e  # Stop on error
-set -x # for debugging
-
-echo "Cloning Maia repository..."
+# Clone MAIA without initializing submodules
 git clone https://github.com/onera/Maia
-
 cd Maia
-git submodule update --init
 
-echo "Building Maia..."
+# Initialize direct submodules only, avoiding recursive initialization
+git submodule update --init 2>&1 || { echo "Erreur lors de l'initialisation des sous-modules" >&2; exit 1; }
 
-# Create build directory
+# Check for required dependencies
+if ! command -v python &> /dev/null; then
+  echo "Python n'est pas installé ou n'est pas dans le PATH." >&2
+  exit 1
+fi
+
+if ! python -c "import numpy"; then
+  echo "NumPy n'est pas installé." >&2
+  exit 1
+fi
+
+if ! command -v mpirun &> /dev/null; then
+  echo "MPI n'est pas installé correctement" >&2
+  exit 1
+fi
+
+# Get Python/Numpy paths
+PYTHON_EXECUTABLE=$(which python)
+PYTHON_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "from sysconfig import get_paths; print(get_paths()['include'])")
+NUMPY_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())")
+
+# Proceed with build
 mkdir -p build
 cd build
 
-# Define Python paths
-PYTHON_EXEC=$(which python)
-PYTHON_INCLUDE_DIR=$(${PYTHON_EXEC} -c "from sysconfig import get_paths as gp; print(gp()['include'])")
-NUMPY_INCLUDE_DIR=$(${PYTHON_EXEC} -c "import numpy; print(numpy.get_include())")
-
-# Run cmake
+# Run CMake with configuration
 cmake ../ \
   -DCMAKE_INSTALL_PREFIX="$(pwd)/../Dist" \
   -DCMAKE_CXX_STANDARD=17 \
@@ -29,18 +43,26 @@ cmake ../ \
   -DPDM_ENABLE_LONG_G_NUM=OFF \
   -DPDM_ENABLE_EXTENSION=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DPYTHON_EXECUTABLE="${PYTHON_EXEC}" \
+  -DPYTHON_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython_ROOT_DIR="$(dirname $(dirname ${PYTHON_EXECUTABLE}))" \
+  -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
   -DPython_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
   -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+  -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+  -DPython3_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+  -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
   -DPython_NumPy=ON
 
-make 
+# Build and install
+make -j
 make install
 
-# Add to PYTHONPATH
-echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> ~/.bashrc
+# Add to PYTHONPATH for Jupyter
+echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
+source /home/jovyan/.bashrc
 
-# For current script session (even if notebook later will reread bashrc)
-export PYTHONPATH="$PYTHONPATH:$(pwd)/../Dist/lib"
+# Copy source for exploration (optional)
+cp -r ../ /home/jovyan/Maia
 
-echo "Maia built and installed."
+# Verify numpy
+conda list numpy
