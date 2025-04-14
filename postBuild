@@ -60,4 +60,4 @@ make install
 # Add to PYTHONPATH for notebook access
 echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)/../Dist/lib" >> /home/jovyan/.bashrc
 
-conda list 
+
