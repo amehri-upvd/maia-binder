@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Logging helpers
 log_info() { echo -e "[INFO] $*"; }
