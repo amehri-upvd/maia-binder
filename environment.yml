@@ -15,3 +15,5 @@ dependencies:
 - jupyterlab
 - ipykernel
 - jupyter_client
+- gcc_linux-64  # Compilateur C
+- gxx_linux-64  # Compilateur C++
