@@ -1,9 +1,9 @@
 channels:
 - conda-forge
 dependencies:
+- pybind11=2.11.1
 - python=3.10
 - numpy=1.26.0
-- pybind11
 - setuptools
 - wheel
 - pytest
