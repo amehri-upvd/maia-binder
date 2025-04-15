@@ -4,7 +4,6 @@ FROM mambaorg/micromamba:1.5.8
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME=/home/${NB_USER}
-ENV MAMBA_DOCKERFILE_ACTIVATE="1"  # Activation cruciale de l'environnement
 
 # Créer l'utilisateur et permissions
 USER root
