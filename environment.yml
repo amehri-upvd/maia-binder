@@ -1,40 +1,17 @@
-name: maia_tutorials
 channels:
-  - conda-forge
+- conda-forge
 dependencies:
-  # Core Python
-  - python=3.10
-  - numpy=1.26.0
-  - pybind11
-  - setuptools
-  - wheel
-  
-  # Test dependencies
-  - pytest
-  - pytest-html
-  
-  # MPI stack (critical for MAIA)
-  - mpi4py=3.1.5
-  - mpich=4.1.2  # MPI implementation
-  - openmpi=4.1.6  # Alternative MPI implementation
-  
-  # Compilation tools (essential for C++/MPI)
-  - gcc_linux-64=12.3.0  # C compiler
-  - gxx_linux-64=12.3.0  # C++ compiler
-  - cmake=3.27.9
-  - make=4.3
-  
-  # Specialized dependencies
-  - cython=0.29.36
-  - h5py=3.10.0
-  - pyyaml=6.0.1
-  
-  # Jupyter stack
-  - jupyterlab=4.0.12
-  - ipykernel=6.28.0
-  - jupyter_client=8.6.0
-  - pip=23.3.1
-
-  # Runtime dependencies
-  - libgcc-ng=13.2.0
-  - libstdcxx-ng=13.2.0
+- python=3.10
+- numpy=1.26.0
+- pybind11
+- setuptools
+- wheel
+- pytest
+- pytest-html
+- mpi4py=3.1.5
+- cython=0.29.36
+- h5py
+- pyyaml
+- jupyterlab
+- ipykernel
+- jupyter_client
