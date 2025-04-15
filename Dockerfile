@@ -9,11 +9,10 @@ ENV NB_USER=${NB_USER} \
 USER root
 RUN apt-get update && apt-get install -y \
     git cmake make zlib1g-dev libbz2-dev \
-    libparmetis-dev libptscotch-dev libopenmpi-dev \
+    libscotchparmetis-dev libscotchmetis-dev libptscotch-dev libopenmpi-dev \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --uid ${NB_UID} ${NB_USER} \
-    && chown -R ${NB_USER}:${NB_USER} ${HOME}
+    && rm -rf /var/lib/apt/lists/*
+
 
 USER ${NB_USER}
 WORKDIR ${HOME}
@@ -38,7 +37,12 @@ RUN git clone https://github.com/onera/Maia.git && \
       -DCMAKE_CXX_STANDARD=17 \
       -DPython_EXECUTABLE=${CONDA_PREFIX}/bin/python \
       -DPython3_NumPy_INCLUDE_DIRS=${CONDA_PREFIX}/lib/python3.9/site-packages/numpy/core/include \
-    && make -j $(nproc) \
+      -DMETIS_DIR=/usr/include/scotch \
+      -DPARMETIS_DIR=/usr/include/scotch \
+      -DMETIS_LIBRARIES=/usr/lib/x86_64-linux-gnu/libscotchmetis.so \
+      -DPARMETIS_LIBRARIES=/usr/lib/x86_64-linux-gnu/libscotchparmetis.so
+
+    && make  \
     && make install
 
 EXPOSE 8888
