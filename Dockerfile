@@ -49,13 +49,8 @@ RUN git clone https://github.com/onera/Maia.git && \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_BUILD_TYPE=Release \
       -DPython_EXECUTABLE=/opt/conda/envs/maia_tutorials/bin/python && \
-    make -j$(nproc) && \
-    make install && \
-    cd ../.. && rm -rf Maia
-
-EXPOSE 8888
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--ServerApp.token=''"]
-
+    make  && \
+    make install 
 
 EXPOSE 8888
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--ServerApp.token=''"]
