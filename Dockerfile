@@ -24,14 +24,14 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copier les fichiers nécessaires
-COPY --chown=${NB_USER}:${NB_USER} *.ipynb ./
 COPY --chown=${NB_USER}:${NB_USER} environment.yml ./
 
 # Créer l'environnement conda avec micromamba
-USER ${NB_USER}
+# Définir le répertoire de travail
 WORKDIR ${HOME}
-RUN micromamba env create -f environment.yml && \
-    micromamba clean --all --yes
+# Créer l'environnement conda avec micromamba
+USER ${NB_USER}
+RUN micromamba env create -f environment.yml && micromamba clean --all --yes
 
 # Activer l’environnement
 ENV PATH=/opt/conda/envs/maia_tutorials/bin:$PATH
