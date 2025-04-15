@@ -7,6 +7,8 @@ ARG NB_UID=1000
 ENV NB_USER=${NB_USER}
 ENV NB_UID=${NB_UID}
 ENV HOME=/home/${NB_USER}
+ARG ENV_NAME=maia-env
+ENV ENV_NAME=${ENV_NAME}
 
 # Run root-privileged operations
 USER root
@@ -38,8 +40,12 @@ COPY --chown=${NB_USER}:${NB_USER} environment.yml ${HOME}/
 
 
 # Activate Conda environment and set environment variables
-ENV PATH=/opt/conda/envs/maia-env/bin:$PATH
-ENV CONDA_DEFAULT_ENV=maia-env
+RUN micromamba env create -f environment.yml -n ${ENV_NAME} && \
+    micromamba clean --all --yes
+
+# Activation permanente de l'environnement
+ENV PATH="/opt/conda/envs/${ENV_NAME}/bin:${PATH}"
+ENV CONDA_DEFAULT_ENV=${ENV_NAME}
 
 # Clone MAIA and build it
 RUN git clone https://github.com/onera/Maia.git && \
@@ -77,8 +83,8 @@ RUN git clone https://github.com/onera/Maia.git && \
     make -j && \
     make install
 
-# Fix PYTHONPATH warning by initializing it explicitly
-ENV PYTHONPATH=/home/jovyan/Maia/Dist/lib:${PYTHONPATH}
+ENV PATH="/opt/conda/envs/${ENV_NAME}/bin:${PATH}"
+    
 
 # Expose port for JupyterLab
 EXPOSE 8888
