@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     git cmake make \
     zlib1g-dev libbz2-dev build-essential \
     software-properties-common python3-dev \
-    libparmetis-dev libptscotch-dev libopenmpi-dev \
+    libscotchparmetis-dev libptscotch-dev libopenmpi-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Switch to user
