@@ -1,10 +1,18 @@
-name: maia-env
+name: maia_tutorials
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.10
   - numpy=1.26.0
+  - pybind11
+  - setuptools
+  - wheel
+  - pytest
+  - pytest-html
   - mpi4py=3.1.5
-  - openmpi
+  - cython=0.29.36
+  - h5py
+  - pyyaml
   - jupyterlab
   - ipykernel
+  - jupyter_client
