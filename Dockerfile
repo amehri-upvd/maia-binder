@@ -1,35 +1,41 @@
-# Utiliser micromamba avec activation explicite
+# Use a Conda base image compatible with Binder
 FROM mambaorg/micromamba:1.5.8
 
+# Define arguments for user setup
 ARG NB_USER=jovyan
 ARG NB_UID=1000
+ENV NB_USER=${NB_USER}
+ENV NB_UID=${NB_UID}
 ENV HOME=/home/${NB_USER}
-ENV ENV_NAME=maia_tutorials
 
-# Configuration système
+# Run root-privileged operations
 USER root
 RUN useradd --create-home --uid ${NB_UID} ${NB_USER} && \
     chown -R ${NB_USER}:${NB_USER} ${HOME}
 
-# Installer dépendances système
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        g++ build-essential openmpi-bin libopenmpi-dev \
-        git cmake make \
-        zlib1g-dev libbz2-dev \
-        software-properties-common python3-dev \
-        libscotchparmetis-dev libptscotch-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install system dependencies using apt-get
+RUN apt-get update && apt-get install -y \
+    git \
+    cmake \
+    make \
+    zlib1g-dev \
+    libbz2-dev \
+    build-essential \
+    software-properties-common \
+    python3-dev \
+    libparmetis-dev \
+    libptscotch-dev \
+    libopenmpi-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch to jovyan user
+USER ${NB_USER}
+WORKDIR ${HOME}
 
 # Copier environment.yml
 COPY --chown=${NB_USER}:${NB_USER} environment.yml ${HOME}/
 
-# Configuration Conda
-USER ${NB_USER}
-WORKDIR ${HOME}
-
-RUN micromamba env create -f environment.yml -n ${ENV_NAME} && \
-    micromamba clean --all --yes
 
 # Activate Conda environment and set environment variables
 ENV PATH=/opt/conda/envs/maia-env/bin:$PATH
