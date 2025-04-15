@@ -15,12 +15,13 @@ RUN useradd --create-home --uid ${NB_UID} ${NB_USER} && \
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    openmpi-bin libopenmpi-dev \
     git cmake make \
     zlib1g-dev libbz2-dev build-essential \
     software-properties-common python3-dev \
     libscotchparmetis-dev libptscotch-dev libopenmpi-dev \
-    conda install -c conda-forge compilers \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
     
 # Switch to user
 USER ${NB_USER}
@@ -44,8 +45,8 @@ RUN git clone https://github.com/onera/Maia.git && \
     mkdir -p build && cd build && \
     cmake .. \
       -DCMAKE_INSTALL_PREFIX=/opt/conda/envs/maia_tutorials \
-      -DCMAKE_C_COMPILER=$(which mpicc) \
-      -DCMAKE_CXX_COMPILER=$(which mpicxx) \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_BUILD_TYPE=Release \
       -DPython_EXECUTABLE=$(which python) \
