@@ -13,9 +13,10 @@ USER root
 RUN useradd --create-home --uid ${NB_UID} ${NB_USER} && \
     chown -R ${NB_USER}:${NB_USER} ${HOME}
 
+
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y  g++ build-essential\
         openmpi-bin libopenmpi-dev \
         git cmake make \
         zlib1g-dev libbz2-dev build-essential \
@@ -24,8 +25,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN conda install -n maia_tutorials -c conda-forge mpich
 
-    
 # Switch to user
 USER ${NB_USER}
 WORKDIR ${HOME}
