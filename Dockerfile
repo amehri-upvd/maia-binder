@@ -31,9 +31,9 @@ WORKDIR ${HOME}
 RUN micromamba env create -f environment.yml -n ${ENV_NAME} && \
     micromamba clean --all --yes
 
-# Activation permanente de l'environnement
-ENV PATH="/opt/conda/envs/${ENV_NAME}/bin:${PATH}"
-ENV CONDA_DEFAULT_ENV=${ENV_NAME}
+# Activate Conda environment and set environment variables
+ENV PATH=/opt/conda/envs/maia-env/bin:$PATH
+ENV CONDA_DEFAULT_ENV=maia-env
 
 # Clone MAIA and build it
 RUN git clone https://github.com/onera/Maia.git && \
@@ -60,12 +60,22 @@ RUN git clone https://github.com/onera/Maia.git && \
       -DCMAKE_SHARED_LINKER_FLAGS='-lz -lbz2' \
       -DPDM_ENABLE_LONG_G_NUM=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+      -DPython_ROOT_DIR="$(dirname $(dirname ${PYTHON_EXECUTABLE}))" \
+      -DPython_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+      -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+      -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+      -DPython3_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+      -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
       -DPython_NumPy=ON && \
-      -DPython_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/python \
-      -DCYTHON_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/cython  && \
-      -DCMAKE_PREFIX_PATH=/opt/conda/envs/${ENV_NAME} && \
-    make && \
+    make -j && \
     make install
 
+# Fix PYTHONPATH warning by initializing it explicitly
+ENV PYTHONPATH=/home/jovyan/Maia/Dist/lib:${PYTHONPATH}
+
+# Expose port for JupyterLab
 EXPOSE 8888
+
+# Start JupyterLab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--ServerApp.token=''"]
