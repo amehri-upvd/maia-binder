@@ -41,7 +41,10 @@ RUN micromamba env create -f environment.yml && \
 ENV PATH=/opt/conda/envs/maia_tutorials/bin:$PATH
 ENV CONDA_DEFAULT_ENV=maia_tutorials
 
-# Clone and install MAIA
+# Installer numpy avec pip (important pour CMake)
+RUN pip install numpy
+
+# Clone et installe MAIA
 RUN git clone https://github.com/onera/Maia.git && \
     cd Maia && \
     git submodule update --init && \
@@ -52,12 +55,12 @@ RUN git clone https://github.com/onera/Maia.git && \
       -DCMAKE_CXX_COMPILER=mpicxx \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_BUILD_TYPE=Release \
-      -DPython_EXECUTABLE=$(which python) \
-      -DPython3_NumPy_INCLUDE_DIRS=$(python -c "import numpy; print(numpy.get_include())") && \
-    make -j$(nproc) && make install
+      -DPython_EXECUTABLE=/opt/conda/envs/maia_tutorials/bin/python \
+      -DPython3_NumPy_INCLUDE_DIRS=/opt/conda/envs/maia_tutorials/lib/python3.10/site-packages/numpy/core/include && \
+    make  && make install
 
 # Ajout au PYTHONPATH
-ENV PYTHONPATH=/opt/conda/envs/maia_tutorials/lib:$PYTHONPATH
+ENV PYTHONPATH=/opt/conda/envs/maia_tutorials/lib
 
 EXPOSE 8888
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--ServerApp.token=''"]
