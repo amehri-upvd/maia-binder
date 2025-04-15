@@ -35,17 +35,39 @@ RUN micromamba env create -f environment.yml -n ${ENV_NAME} && \
 ENV PATH="/opt/conda/envs/${ENV_NAME}/bin:${PATH}"
 ENV CONDA_DEFAULT_ENV=${ENV_NAME}
 
-# Installation MAIA avec configuration explicite
+# Clone MAIA and build it
 RUN git clone https://github.com/onera/Maia.git && \
     cd Maia && \
     git submodule update --init && \
-    mkdir -p build && cd build && \
+    mkdir -p Dist && \
+    mkdir -p build && \
+    cd build && \
+    export CC=$(which gcc) && \
+    export CXX=$(which g++) && \
+    export MPICC=$(which mpicc) && \
+    export MPICXX=$(which mpicxx) && \
+    PYTHON_EXECUTABLE=$(which python) && \
+    PYTHON_INCLUDE_DIR=$(python -c "import sysconfig; print(sysconfig.get_path('include'))") && \
+    NUMPY_INCLUDE_DIR=$(python -c "import numpy; print(numpy.get_include())") && \
     cmake .. \
-      -DCMAKE_INSTALL_PREFIX=/opt/conda/envs/${ENV_NAME} \
-      -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_INSTALL_PREFIX="$(pwd)/../Dist" \
+      -DCMAKE_C_COMPILER="${CC}" \
+      -DCMAKE_CXX_COMPILER="${CXX}" \
+      -DMPI_C_COMPILER="${MPICC}" \
+      -DMPI_CXX_COMPILER="${MPICXX}" \
       -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_EXE_LINKER_FLAGS='-lz -lbz2' \
+      -DCMAKE_SHARED_LINKER_FLAGS='-lz -lbz2' \
+      -DPDM_ENABLE_LONG_G_NUM=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+      -DPython_ROOT_DIR="$(dirname $(dirname ${PYTHON_EXECUTABLE}))" \
+      -DPython_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+      -DPython_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+      -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
+      -DPython3_INCLUDE_DIRS="${PYTHON_INCLUDE_DIR}" \
+      -DPython3_NumPy_INCLUDE_DIRS="${NUMPY_INCLUDE_DIR}" \
+      -DPython_NumPy=ON && \
       -DPython_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/python \
       -DCYTHON_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/cython  && \
       -DCMAKE_PREFIX_PATH=/opt/conda/envs/${ENV_NAME} && \
