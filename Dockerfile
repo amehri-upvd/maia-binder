@@ -14,13 +14,16 @@ RUN useradd --create-home --uid ${NB_UID} ${NB_USER} && \
     chown -R ${NB_USER}:${NB_USER} ${HOME}
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    openmpi-bin libopenmpi-dev \
-    git cmake make \
-    zlib1g-dev libbz2-dev build-essential \
-    software-properties-common python3-dev \
-    libscotchparmetis-dev libptscotch-dev libopenmpi-dev \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y \
+        openmpi-bin libopenmpi-dev \
+        git cmake make \
+        zlib1g-dev libbz2-dev build-essential \
+        software-properties-common python3-dev \
+        libscotchparmetis-dev libptscotch-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 
     
 # Switch to user
