@@ -1,18 +1,18 @@
-# Utiliser micromamba seulement
+# Utiliser micromamba avec activation explicite de l'environnement
 FROM mambaorg/micromamba:1.5.8
 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME=/home/${NB_USER}
+ENV CONDA_ENV=maia_tutorials
 
-# Créer l'utilisateur et permissions
+# Configuration système
 USER root
 RUN useradd --create-home --uid ${NB_UID} ${NB_USER} && \
     chown -R ${NB_USER}:${NB_USER} ${HOME}
 
-# Installer dépendances système (optimisé en une seule couche)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Installation des dépendances système (optimisé en une seule couche)
+RUN apt-get update && apt-get install -y --no-install-recommends \
         g++ build-essential openmpi-bin libopenmpi-dev \
         git cmake make \
         zlib1g-dev libbz2-dev \
@@ -21,36 +21,40 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copier environment.yml en chemin absolu
+# Copie du fichier environment.yml
 COPY --chown=${NB_USER}:${NB_USER} environment.yml ${HOME}/
 
-# Configuration conda
+# Configuration Conda
 USER ${NB_USER}
 WORKDIR ${HOME}
 
-# Créer l'environnement conda (avec vérification de fichier)
-RUN ls -l ${HOME}/environment.yml && \
-    micromamba env create -f environment.yml -n maia_tutorials && \
+# Création de l'environnement Conda avec vérification
+RUN micromamba env create -f environment.yml -n ${CONDA_ENV} && \
     micromamba clean --all --yes
 
-# Activer l'environnement automatiquement
-ENV PATH="/opt/conda/envs/maia_tutorials/bin:${PATH}"
-ENV CONDA_DEFAULT_ENV=maia_tutorials
+# Activation permanente de l'environnement Conda
+ENV ENV_NAME=${CONDA_ENV}
+RUN echo "micromamba activate ${ENV_NAME}" >> ~/.bashrc
+SHELL ["/bin/bash", "--login", "-c"]
 
-# Installation MAIA (optimisé avec suppression des fichiers temporaires)
+# Installation de MAIA avec activation explicite de l'environnement
 RUN git clone https://github.com/onera/Maia.git && \
     cd Maia && \
     git submodule update --init && \
     mkdir -p build && cd build && \
+    source activate ${ENV_NAME} && \
     cmake .. \
-      -DCMAKE_INSTALL_PREFIX=/opt/conda/envs/maia_tutorials \
+      -DCMAKE_INSTALL_PREFIX=/opt/conda/envs/${ENV_NAME} \
       -DCMAKE_C_COMPILER=mpicc \
       -DCMAKE_CXX_COMPILER=mpicxx \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_BUILD_TYPE=Release \
-      -DPython_EXECUTABLE=/opt/conda/envs/maia_tutorials/bin/python && \
-    make  && \
-    make install 
+      -DPython_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/python && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../.. && rm -rf Maia
 
+# Configuration finale
+ENV PATH="/opt/conda/envs/${ENV_NAME}/bin:${PATH}"
 EXPOSE 8888
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--ServerApp.token=''"]
