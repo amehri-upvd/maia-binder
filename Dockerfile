@@ -47,6 +47,7 @@ RUN git clone https://github.com/onera/Maia.git && \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_BUILD_TYPE=Release \
       -DPython_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/python \
+      -DCYTHON_EXECUTABLE=/opt/conda/envs/${ENV_NAME}/bin/cython  && \
       -DCMAKE_PREFIX_PATH=/opt/conda/envs/${ENV_NAME} && \
     make && \
     make install
