@@ -1,8 +1,0 @@
-git
-cmake
-make
-zlib1g-dev
-libbz2-dev
-libparmetis-dev
-libptscotch-dev
-libopenmpi-dev
